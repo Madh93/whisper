@@ -60,7 +60,7 @@ By default, it utilizes Docker for transcription. To opt for native execution:
 DOCKER_ENABLED=no make transcribe model=small.en lang=en file=audios/jfk.wav
 ```
 
-Both methods generate `.srt` and `.lrt` (converted to `.txt`) transcription files.
+Both methods generate `.srt`, `.lrt` and `.txt` transcription files.
 
 ### Convert to video
 

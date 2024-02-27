@@ -30,7 +30,7 @@ transcribe:
 ifeq ($(DOCKER_ENABLED),yes)
 	docker run -it --rm -v $(CURDIR)/models:/models -v $(CURDIR)/audios:/audios ghcr.io/ggerganov/whisper.cpp:main-$(WHISPER_VERSION) "./main -m /models/ggml-$(model).bin -l $(lang) -f /$(file) -osrt -olrc -pc -pp" && mv -f $(file).lrc $(file).txt
 else
-	./whisper.cpp/main -m ./models/ggml-$(model).bin -l $(lang) -f $(CURDIR)/$(file) -osrt -olrc -pc -pp && mv -f $(file).lrc $(file).txt
+	./whisper.cpp/main -m ./models/ggml-$(model).bin -l $(lang) -f $(CURDIR)/$(file) -osrt -otxt -olrc -pc -pp
 endif
 
 ### FFmpeg utilities
