@@ -1,19 +1,26 @@
-.PHONY: all setup download convert-to-wav transcribe convert-to-video
+.PHONY: all clean setup download convert-to-wav transcribe convert-to-video
 
 # Default settings
 DOCKER_ENABLED ?= yes
-WHISPER_VERSION ?= 0b9af32a8b3fa7e2ae5f15a9a08f5b10394993f5
+WHISPER_VERSION ?= c10db6ea2883a4f77440fa8caeb296a0e351a58c # 1.6.1
 model ?= medium.en
 lang ?= en
 video_out = $(patsubst %.wav,%.mp4,$(input))
 
 all: setup
 
+clean:
+	rm -rf audios models whisper.cpp
+
 setup:
 	mkdir -p audios models
 ifeq ($(DOCKER_ENABLED),no)
-	[ ! -d "whisper.cpp" ] && git clone https://github.com/ggerganov/whisper.cpp.git && cd whisper.cpp && git checkout $(WHISPER_VERSION) ||:
-	[ ! -f "whisper.cpp/main" ] && (cd whisper.cpp && make -j) ||:
+	[ ! -d "whisper.cpp" ] && git clone https://github.com/ggerganov/whisper.cpp.git && git -C whisper.cpp checkout $(WHISPER_VERSION) ||:
+	current_version=$$(git -C whisper.cpp rev-parse HEAD) && \
+	if [ "$$current_version" != "$(WHISPER_VERSION)" ]; then \
+		rm -rf whisper.cpp && git clone https://github.com/ggerganov/whisper.cpp.git && git -C whisper.cpp checkout $(WHISPER_VERSION); \
+	fi
+	[ ! -f "whisper.cpp/main" ] && cd whisper.cpp && make clean && make -j ||:
 endif
 
 ### Whisper in action

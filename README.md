@@ -18,6 +18,14 @@ Clone the repository and initialize the required dependencies:
 make setup
 ```
 
+**Optionally**, if you want AMD ROCm support to use your AMD GPU* just run:
+
+```shell
+WHISPER_HIPBLAS=1 make setup
+```
+
+*If your GPU is not officially supported don't forget to set the `HSA_OVERRIDE_GFX_VERSION` environment variable. More info [here](https://github.com/ollama/ollama/blob/main/docs/gpu.md#overrides).
+
 ### Download models
 
 Downloads the necessary models for transcription:
@@ -60,7 +68,13 @@ By default, it utilizes Docker for transcription. To opt for native execution:
 DOCKER_ENABLED=no make transcribe model=small.en lang=en file=audios/jfk.wav
 ```
 
-Both methods generate `.srt`, `.lrt` and `.txt` transcription files.
+To run in your unsupported AMD GPU, just override the LLVM target. Example:
+
+```shell
+HSA_OVERRIDE_GFX_VERSION=10.3.0 DOCKER_ENABLED=no make transcribe model=small.en lang=en file=audios/jfk.wav
+```
+
+All methods generate `.srt`, `.lrt` and `.txt` transcription files.
 
 ### Convert to video
 
