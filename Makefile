@@ -2,7 +2,7 @@
 
 # Default settings
 DOCKER_ENABLED ?= yes
-WHISPER_VERSION ?= c10db6ea2883a4f77440fa8caeb296a0e351a58c # 1.6.1
+WHISPER_VERSION ?= a8d002cfd879315632a579e73f0148d06959de36 # 1.7.6
 model ?= medium.en
 lang ?= en
 video_out = $(patsubst %.wav,%.mp4,$(input))
@@ -15,27 +15,27 @@ clean:
 setup:
 	mkdir -p audios models
 ifeq ($(DOCKER_ENABLED),no)
-	[ ! -d "whisper.cpp" ] && git clone https://github.com/ggerganov/whisper.cpp.git && git -C whisper.cpp checkout $(WHISPER_VERSION) ||:
+	[ ! -d "whisper.cpp" ] && git clone https://github.com/ggml-org/whisper.cpp.git && git -C whisper.cpp checkout $(WHISPER_VERSION) ||:
 	current_version=$$(git -C whisper.cpp rev-parse HEAD) && \
 	if [ "$$current_version" != "$(WHISPER_VERSION)" ]; then \
-		rm -rf whisper.cpp && git clone https://github.com/ggerganov/whisper.cpp.git && git -C whisper.cpp checkout $(WHISPER_VERSION); \
+		rm -rf whisper.cpp && git clone https://github.com/ggml-org/whisper.cpp.git && git -C whisper.cpp checkout $(WHISPER_VERSION); \
 	fi
 	[ ! -f "whisper.cpp/main" ] && cd whisper.cpp && make clean && make -j ||:
 endif
 
 ### Whisper in action
 
-# Download available models. More info: https://github.com/ggerganov/whisper.cpp/tree/master/models#available-models
+# Download available models. More info: https://github.com/ggml-org/whisper.cpp/tree/master/models#available-models
 download:
 ifeq ($(DOCKER_ENABLED),yes)
-	docker run --rm -it -v $(CURDIR)/models:/models ghcr.io/ggerganov/whisper.cpp:main-$(WHISPER_VERSION) "./models/download-ggml-model.sh $(model) /models"
+	docker run --rm -it -v $(CURDIR)/models:/models ghcr.io/ggml-org/whisper.cpp:main-$(WHISPER_VERSION) "./models/download-ggml-model.sh $(model) /models"
 else
 	./whisper.cpp/models/download-ggml-model.sh $(model) ./models
 endif
 
 transcribe:
 ifeq ($(DOCKER_ENABLED),yes)
-	docker run -it --rm -v $(CURDIR)/models:/models -v $(CURDIR)/audios:/audios ghcr.io/ggerganov/whisper.cpp:main-$(WHISPER_VERSION) "./main -m /models/ggml-$(model).bin -l $(lang) -f /$(file) -osrt -olrc -pc -pp" && mv -f $(file).lrc $(file).txt
+	docker run -it --rm -v $(CURDIR)/models:/models -v $(CURDIR)/audios:/audios ghcr.io/ggml-org/whisper.cpp:main-$(WHISPER_VERSION) "whisper-cli -m /models/ggml-$(model).bin -l $(lang) -f /$(file) -osrt -olrc -pc -pp" && mv -f $(file).lrc $(file).txt
 else
 	./whisper.cpp/main -m ./models/ggml-$(model).bin -l $(lang) -f $(CURDIR)/$(file) -osrt -otxt -olrc -pc -pp
 endif
